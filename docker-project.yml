@@ -75,15 +75,13 @@
         source ~/.bash_profile
         aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
 
-
-
-    - name: postgre db config
-      hosts: _ansible_postgresql
-      become: true
-      vars:
-        container_name: postgres
-        image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:postgres
-      tasks:
+- name: postgre db config
+  hosts: _ansible_postgresql
+  become: true
+  vars:
+    container_name: postgres
+    image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:postgres
+  tasks:
     - name: remove "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
@@ -107,13 +105,13 @@
           - /db-data:/var/lib/postgresql
 
     
-    - name: backend (nodejs) config
-      hosts: _ansible_nodejs
-      become: true
-      vars:
-        container_name: nodejs
-        image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:nodejs
-      tasks:
+- name: backend (nodejs) config
+  hosts: _ansible_nodejs
+  become: true
+  vars:
+    container_name: nodejs
+    image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:nodejs
+  tasks:
     - name: remove "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
@@ -133,13 +131,13 @@
           - "5000:5000"
         
 
-    - name: frontend (react) config
-      hosts: _ansible_react
-      become: true
-      vars:
-        container_name: react
-        image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:react
-      tasks:
+- name: frontend (react) config
+  hosts: _ansible_react
+  become: true
+  vars:
+    container_name: react
+    image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:react
+  tasks:
     - name: remove "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
