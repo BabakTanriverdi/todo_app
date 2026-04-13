@@ -43,7 +43,7 @@
     - name: Add ec2-user to Docker group
       ansible.builtin.user:
         name: ec2-user
-        group: docker
+        groups: docker
         append: yes
     
     - name: start Docker
@@ -65,9 +65,8 @@
 
     - name: run the installer
       ansible.builtin.command:
-      args:
         cmd: "./aws/install"
-        creates: /usr/local/bin/aws  
+        creates: /usr/local/bin/aws 
 
     - name: Log in to ECR
       ansible.builtin.shell: |
@@ -91,6 +90,7 @@
     - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
         name: "{{ image_name }}"
+        state: absent
 
     - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
@@ -121,6 +121,7 @@
     - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
         name: "{{ image_name }}"
+        state: absent
 
     - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
@@ -147,6 +148,8 @@
     - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
         name: "{{ image_name }}"
+        state: absent
+
 
     - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
