@@ -19,7 +19,6 @@ pprovider "aws" {
 }
 
 variable tags {
-  type        = string
   default     = ["postgresql", "nodejs", "react"]
   description = "tags for resources"
 }
