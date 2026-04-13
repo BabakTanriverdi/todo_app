@@ -22,6 +22,8 @@
           - docker-latest-logrotate
           - docker-logrotate
           - docker-engine
+        state: absent
+      ignore_errors: yes
       
     - name: Install dnf-plugins-core and unzip
       ansible.builtin.dnf:
