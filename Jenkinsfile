@@ -18,7 +18,7 @@ pipeline {
         stage ("Create Infra for the app"){
             steps{
                 echo 'Creating Infrastructure for the app on AWS'
-                sh 'terraform init -no-color'
+                sh 'terraform init'
                 sh 'terraform apply -no-color --auto-approve'
             }
         }

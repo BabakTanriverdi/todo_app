@@ -84,20 +84,20 @@
         container_name: postgres
         image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:postgres
       tasks:
-    - name: remove {{ container_name }} container
+    - name: remove "{{ container_name }}" container
       community.docker.docker_container:
-        name: {{ container_name }}
+        name: "{{ container_name }}"
         state: absent
         force_kill: true
     
-    - name: Remove {{ container_name }} image
+    - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
-        name: {{ image_name }}
+        name: "{{ image_name }}"
 
-    - name: Launch {{ container_name }} container
+    - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
-        name: {{ container_name }}
-        image: {{ image_name }} 
+        name: "{{ container_name }}"
+        image: "{{ image_name }}" 
         state: started
         ports:
           - "5432:5432"
@@ -114,20 +114,20 @@
         container_name: nodejs
         image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:nodejs
       tasks:
-    - name: remove {{ container_name }} container
+    - name: remove "{{ container_name }}" container
       community.docker.docker_container:
-        name: {{ container_name }}
+        name: "{{ container_name }}"
         state: absent
         force_kill: true
     
-    - name: Remove {{ container_name }} image
+    - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
-        name: {{ image_name }}
+        name: "{{ image_name }}"
 
-    - name: Launch {{ container_name }} container
+    - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
-        name: {{ container_name }}
-        image: {{ image_name }} 
+        name: "{{ container_name }}"
+        image: "{{ image_name }}" 
         state: started
         ports:
           - "5000:5000"
@@ -140,20 +140,20 @@
         container_name: react
         image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:react
       tasks:
-    - name: remove {{ container_name }} container
+    - name: remove "{{ container_name }}" container
       community.docker.docker_container:
-        name: {{ container_name }}
+        name: "{{ container_name }}"
         state: absent
         force_kill: true
     
-    - name: Remove {{ container_name }} image
+    - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
-        name: {{ image_name }}
+        name: "{{ image_name }}"
 
-    - name: Launch {{ container_name }} container
+    - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
-        name: {{ container_name }}
-        image: {{ image_name }} 
+        name: "{{ container_name }}"
+        image: "{{ image_name }}" 
         state: started
         ports:
           - "3000:3000"
