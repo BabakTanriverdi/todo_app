@@ -4,16 +4,16 @@
   become: true
   vars:
     aws_region: us-east-1
-    ecr_registry: 236195543706.dkr.ecr.us-east-1.amazonaws.com   # 236195543706 is the AWS account ID for the public ECR registry
+    ecr_registry: "{{ lookup('env','ECR_REGISTRY') }}"
   tasks:
     - name: upgrade all packages
       ansible.builtin.dnf:
         name: '*'
         state: latest
-    
+
     - name: Remove Docker if installed
       ansible.builtin.dnf:
-        name: 
+        name:
           - docker
           - docker-client
           - docker-client-latest
@@ -24,10 +24,10 @@
           - docker-engine
         state: absent
       ignore_errors: yes
-      
+
     - name: Install dnf-plugins-core and unzip
       ansible.builtin.dnf:
-        name: 
+        name:
           - dnf-plugins-core
           - unzip
         state: latest
@@ -41,39 +41,38 @@
       ansible.builtin.package:
         name: docker
         state: latest
-    
+
     - name: Add ec2-user to Docker group
       ansible.builtin.user:
         name: ec2-user
         groups: docker
         append: yes
-    
-    - name: start Docker
+
+    - name: Start Docker
       ansible.builtin.service:
         name: docker
         state: started
         enabled: yes
-  
-    - name: install aws cli
+
+    - name: Install AWS CLI
       ansible.builtin.get_url:
         url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: /home/ec2-user/awscliv2.zip
 
-    - name: unzip zip file
+    - name: Unzip AWS CLI
       ansible.builtin.unarchive:
         src: /home/ec2-user/awscliv2.zip
         dest: /home/ec2-user
         remote_src: True
 
-    - name: run the installer
+    - name: Run the installer
       ansible.builtin.command:
         cmd: "./aws/install"
-        creates: /usr/local/bin/aws 
+        creates: /usr/local/bin/aws
 
     - name: Log in to ECR
       ansible.builtin.shell: |
         export PATH=/usr/local/bin:$PATH
-        source ~/.bash_profile
         aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
 
 - name: postgre db config
@@ -81,14 +80,14 @@
   become: true
   vars:
     container_name: postgres
-    image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:postgres
+    image_name: "{{ lookup('env','ECR_REGISTRY') }}/babak-todo-app:postgres"
   tasks:
-    - name: remove "{{ container_name }}" container
+    - name: Remove "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
         state: absent
         force_kill: true
-    
+
     - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
         name: "{{ image_name }}"
@@ -97,7 +96,7 @@
     - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
-        image: "{{ image_name }}" 
+        image: "{{ image_name }}"
         state: started
         ports:
           - "5432:5432"
@@ -106,20 +105,19 @@
         volumes:
           - /db-data:/var/lib/postgresql
 
-    
 - name: backend (nodejs) config
   hosts: _ansible_nodejs
   become: true
   vars:
     container_name: nodejs
-    image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:nodejs
+    image_name: "{{ lookup('env','ECR_REGISTRY') }}/babak-todo-app:nodejs"
   tasks:
-    - name: remove "{{ container_name }}" container
+    - name: Remove "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
         state: absent
         force_kill: true
-    
+
     - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
         name: "{{ image_name }}"
@@ -128,36 +126,33 @@
     - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
-        image: "{{ image_name }}" 
+        image: "{{ image_name }}"
         state: started
         ports:
           - "5000:5000"
-        
 
 - name: frontend (react) config
   hosts: _ansible_react
   become: true
   vars:
     container_name: react
-    image_name:  236195543706.dkr.ecr.us-east-1.amazonaws.com/babak-todo-app:react
+    image_name: "{{ lookup('env','ECR_REGISTRY') }}/babak-todo-app:react"
   tasks:
-    - name: remove "{{ container_name }}" container
+    - name: Remove "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
         state: absent
         force_kill: true
-    
+
     - name: Remove "{{ container_name }}" image
       community.docker.docker_image:
         name: "{{ image_name }}"
         state: absent
 
-
     - name: Launch "{{ container_name }}" container
       community.docker.docker_container:
         name: "{{ container_name }}"
-        image: "{{ image_name }}" 
+        image: "{{ image_name }}"
         state: started
         ports:
           - "3000:3000"
-        

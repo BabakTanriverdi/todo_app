@@ -23,7 +23,6 @@ pipeline {
             }
         }
 
-
         stage ('Create ECR'){
             steps{
                 echo 'Creating ECR for app images'
@@ -36,21 +35,17 @@ pipeline {
                     --region ${AWS_REGION}
                 '''
             }
-        } 
+        }
 
         stage ('Build Docker Images'){
             steps{
                 echo 'Building app images'
-
-                    script{
-                        env.NODE_IP = sh(script:'terraform output -raw node_public_ip', returnStdout:true).trim()
-                        
-                        env.DB_HOST = sh(script:'terraform output -raw postgre_private_ip', returnStdout:true).trim()
-                        
-                        env.DB_NAME = sh(script: 'aws --region=us-east-1 ssm get-parameters --names "db_name" --query "Parameters[*].{Value:Value}" --output text', returnStdout:true).trim()
-
-                        env.DB_PASSWORD = sh(script: 'aws --region=us-east-1 ssm get-parameters --names "db_password" --query "Parameters[*].{Value:Value}" --output text', returnStdout:true).trim()
-                    }
+                script{
+                    env.NODE_IP = sh(script:'terraform output -raw node_public_ip', returnStdout:true).trim()
+                    env.DB_HOST = sh(script:'terraform output -raw postgre_private_ip', returnStdout:true).trim()
+                    env.DB_NAME = sh(script:'aws --region=us-east-1 ssm get-parameters --names "db_name" --query "Parameters[*].{Value:Value}" --output text', returnStdout:true).trim()
+                    env.DB_PASSWORD = sh(script:'aws --region=us-east-1 ssm get-parameters --names "db_password" --query "Parameters[*].{Value:Value}" --output text', returnStdout:true).trim()
+                }
                 sh 'echo ${DB_HOST}'
                 sh 'echo ${NODE_IP}'
                 sh 'echo ${DB_NAME}'
@@ -58,7 +53,6 @@ pipeline {
 
                 sh 'envsubst < node-env-template > ./nodejs/server/.env'
                 sh 'cat ./nodejs/server/.env'
-
                 sh 'envsubst < react-env-template > ./react/client/.env'
                 sh 'cat ./react/client/.env'
 
@@ -83,17 +77,14 @@ pipeline {
                 script{
                     echo 'Waiting for the instances'
 
-                id_postresql = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=ansible_postgresql Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text',  returnStdout:true).trim()
+                    def id_postgresql = sh(script:'aws ec2 describe-instances --filters Name=tag-value,Values=ansible_postgresql Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
+                    sh "aws ec2 wait instance-status-ok --instance-ids $id_postgresql"
 
-                sh 'aws ec2 wait instance-status-ok --instance-ids $id_postegresql'
+                    def id_nodejs = sh(script:'aws ec2 describe-instances --filters Name=tag-value,Values=ansible_nodejs Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
+                    sh "aws ec2 wait instance-status-ok --instance-ids $id_nodejs"
 
-                id_nodejs = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=ansible_nodejs Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text',  returnStdout:true).trim()
-
-                sh 'aws ec2 wait instance-status-ok --instance-ids $id_nodejs'
-
-                id_react = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=ansible_react Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text',  returnStdout:true).trim()
-
-                sh 'aws ec2 wait instance-status-ok --instance-ids $id_react'
+                    def id_react = sh(script:'aws ec2 describe-instances --filters Name=tag-value,Values=ansible_react Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
+                    sh "aws ec2 wait instance-status-ok --instance-ids $id_react"
                 }
             }
         }
@@ -103,10 +94,8 @@ pipeline {
                 echo 'Deploying the app...'
                 sh 'ls -l'
                 sh 'ansible --version'
-
                 ansiblePlaybook credentialsId: 'project-208', disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory_aws_ec2.yml', playbook: 'docker-project.yml'
             }
-
         }
 
         stage ('Destroy the infra'){
@@ -116,11 +105,11 @@ pipeline {
                 }
                 sh """
                 docker image prune -af
-                terraform destroy -no-color --auto-approve
                 aws ecr delete-repository \
                   --repository-name ${APP_REPO_NAME} \
                   --region ${AWS_REGION} \
                   --force
+                terraform destroy -no-color --auto-approve
                 """
             }
         }
@@ -137,12 +126,11 @@ pipeline {
             sh """
                 aws ecr delete-repository \
                   --repository-name ${APP_REPO_NAME} \
-                  --region ${AWS_REGION}\
+                  --region ${AWS_REGION} \
                   --force
                 """
             echo 'Deleting Terraform Stack due to the Failure'
             sh 'terraform destroy -no-color --auto-approve'
         }
     }
-
 }
