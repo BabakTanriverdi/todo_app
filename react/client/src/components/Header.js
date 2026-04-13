@@ -1,16 +1,17 @@
 import React from "react";
+import cw from "../assets/cw.svg";
 import "./style.css";
 
 const Header = () => {
   return (
-    <div className="header-wrap">
-      <div className="header-logo">
-        <svg viewBox="0 0 24 24">
-          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-        </svg>
+    <div>
+      <div className="text-center">
+        <img src={cw} alt="clarusway" className="cw" />
+        <h6 className="text-center mt-5">
+          This app has been developed by Clarusway Developers.
+        </h6>
+        <h1 className="text-center mt-5 header-text">Clarus Todos</h1>
       </div>
-      <h1 className="header-title">Clarus Todos</h1>
-      <p className="header-sub">✨ Clarusway Developers tarafından geliştirildi</p>
     </div>
   );
 };

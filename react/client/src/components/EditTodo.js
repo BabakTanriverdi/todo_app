@@ -1,101 +1,91 @@
 import React, { Fragment, useState } from "react";
-import { TAGS } from "./InputTodo";
-import "./style.css";
-
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const EditTodo = ({ todo }) => {
   const [description, setDescription] = useState(todo.description);
-  const [selectedTag, setSelectedTag] = useState(todo.tag || null);
-  const [isOpen, setIsOpen] = useState(false);
 
-  const currentTag = TAGS.find((t) => t.value === (todo.tag || selectedTag));
+  //edit description function
 
   const updateDescription = async (e) => {
     e.preventDefault();
     try {
-      await fetch(`${BASE_URL}todos/${todo.todo_id}`, {
+      const body = { description };
+      const response = await fetch(`${BASE_URL}todos/${todo.todo_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, tag: selectedTag }),
+        body: JSON.stringify(body),
       });
-      setIsOpen(false);
+
+      console.log(response);
       window.location = "/";
     } catch (err) {
       console.error(err.message);
     }
   };
 
-  const handleClose = () => {
-    setDescription(todo.description);
-    setSelectedTag(todo.tag || null);
-    setIsOpen(false);
-  };
-
   return (
     <Fragment>
-      {/* Tag badge — shown in list */}
-      {currentTag && (
-        <span className={`todo-tag ${currentTag.colorClass}`}>
-          {currentTag.label}
-        </span>
-      )}
+      <button
+        type="button"
+        className="btn btn-warning"
+        data-toggle="modal"
+        data-target={`#id${todo.todo_id}`}
+      >
+        Edit
+      </button>
 
-      {/* Edit button */}
-      <div className="action-btns">
-        <button
-          className="btn-icon btn-edit"
-          onClick={() => setIsOpen(true)}
-          title="Düzenle"
-        >
-          <svg viewBox="0 0 24 24">
-            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-          </svg>
-        </button>
-      </div>
+      {/* 
+        id = id10
+      */}
+      <div
+        className="modal"
+        id={`id${todo.todo_id}`}
+        onClick={() => setDescription(todo.description)}
+      >
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h4 className="modal-title">Edit Todo</h4>
+              <button
+                type="button"
+                className="close"
+                data-dismiss="modal"
+                onClick={() => setDescription(todo.description)}
+              >
+                &times;
+              </button>
+            </div>
 
-      {/* Edit modal */}
-      {isOpen && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
-        >
-          <div className="modal-box">
-            <h3 className="modal-title">✏️ Görevi Düzenle</h3>
-
-            <input
-              type="text"
-              className="modal-input"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") updateDescription(e); }}
-              autoFocus
-            />
-
-            <div className="tag-selector">
-              {TAGS.map((tag) => (
-                <button
-                  type="button"
-                  key={tag.value}
-                  className={`tag-option ${tag.colorClass}${selectedTag === tag.value ? " selected" : ""}`}
-                  onClick={() => setSelectedTag(selectedTag === tag.value ? null : tag.value)}
-                >
-                  {tag.label}
-                </button>
-              ))}
+            <div className="modal-body">
+              <input
+                type="text"
+                className="form-control"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
 
             <div className="modal-footer">
-              <button className="modal-btn modal-btn-cancel" onClick={handleClose}>
-                İptal
+              <button
+                type="button"
+                className="btn btn-warning"
+                data-dismiss="modal"
+                onClick={(e) => updateDescription(e)}
+              >
+                Edit
               </button>
-              <button className="modal-btn modal-btn-save" onClick={updateDescription}>
-                💾 Kaydet
+              <button
+                type="button"
+                className="btn btn-danger"
+                data-dismiss="modal"
+                onClick={() => setDescription(todo.description)}
+              >
+                Close
               </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </Fragment>
   );
 };
